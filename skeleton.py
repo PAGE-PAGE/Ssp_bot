@@ -6,7 +6,7 @@ from Handlers import based_commands
 
 
 async def main():
-    bot = Bot(token="7170960627:AAH-5Qd7FGMZwYHpFUtaRzB9SfU2PLuZqbg")
+    bot = Bot(token="TOKEN")
     dp = Dispatcher()
     db_start()
 
