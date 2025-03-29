@@ -46,10 +46,17 @@ def draw_counter(id: int):
         db.commit()
 
 
-def get_chto_to(id: int):
+def gpd_wld(id: int):
     with sq.connect("sspaper.db") as db:
         cursor = db.cursor()
         cursor.execute('SELECT username, wins, loses, draw FROM users WHERE user_id = ?', (id,))
+        return cursor.fetchall()
+
+
+def gun(username: str):
+    with sq.connect("sspaper.db") as db:
+        cursor = db.cursor()
+        cursor.execute('SELECT wins, loses, draw FROM users WHERE username = ?', (username,))
         return cursor.fetchall()
 
 # ¯\_(ツ)_/¯

@@ -6,7 +6,7 @@ from aiogram.exceptions import TelegramBadRequest
 from Keyboards.interfaces import psc_gamemode, profile_window, starting_menu
 from States.user_states import Fsm_state_list
 from aiogram.fsm.context import FSMContext
-from Handlers.database import draw_counter, loses_counter, win_counter, get_chto_to
+from Handlers.database import draw_counter, loses_counter, win_counter, gpd_wld
 
 router = Router()
 
@@ -22,7 +22,7 @@ async def i_always_come_back(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(F.data == 'profile', StateFilter(Fsm_state_list.START))
 async def profile_managing(callback: CallbackQuery, state: FSMContext):
     await state.set_state(Fsm_state_list.PROFILE)
-    get = get_chto_to(callback.from_user.id)
+    get = gpd_wld(callback.from_user.id)
     await callback.message.edit_text(text=f'''<b>---YOUR PROFILE---
 Name: {get[0][0]}
 Wins: {get[0][1]}
