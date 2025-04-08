@@ -6,10 +6,12 @@ def db_start():
         cursor = db.cursor()
         cursor.execute('CREATE TABLE IF NOT EXISTS users ('
                        'user_id INTEGER PRIMARY KEY,'
+                       'referrer_id INTEGER,'
                        'username TEXT,'
                        'wins INTEGER,'
                        'draw INTEGER,'
-                       'loses INTEGER)')
+                       'loses INTEGER,'
+                       'bonuses INTEGER)')
         db.commit()
 
 
@@ -46,6 +48,13 @@ def draw_counter(id: int):
         db.commit()
 
 
+def bonuses_counter(id: int):
+    with sq.connect("sspaper.db") as db:
+        cursor = db.cursor()
+        cursor.execute('UPDATE users SET bonuses = COALESCE(bonuses, 0) +0.2 WHERE user_id = ?', (id,))
+        db.commit()
+
+
 def gpd_wld(id: int):
     with sq.connect("sspaper.db") as db:
         cursor = db.cursor()
@@ -53,10 +62,18 @@ def gpd_wld(id: int):
         return cursor.fetchall()
 
 
-def gun(username: str):
+def gun(id: int):
     with sq.connect("sspaper.db") as db:
         cursor = db.cursor()
-        cursor.execute('SELECT wins, loses, draw FROM users WHERE username = ?', (username,))
+        cursor.execute('SELECT wins, loses, draw FROM users WHERE user_id = ?', (id,))
         return cursor.fetchall()
+
+
+def get_social_stats(id: int):
+    with sq.connect("sspaper.db") as db:
+        cursor = db.cursor()
+        cursor.execute('SELECT COUNT(referrer_id) FROM users WHERE referrer_id = ?', (id,))
+        return cursor.fetchall()
+
 
 # ¯\_(ツ)_/¯

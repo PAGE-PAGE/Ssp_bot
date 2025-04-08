@@ -16,4 +16,4 @@ async def psc_starting(message: Message, state: FSMContext):
                          reply_markup=starting_menu())
     user_in(message.chat.id, message.from_user.username)
 
-# ¯\_(ツ)_/¯
+# ¯\_(ツ)_/¯'

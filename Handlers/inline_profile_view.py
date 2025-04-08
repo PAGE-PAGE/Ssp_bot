@@ -8,17 +8,17 @@ router = Router()
 
 @router.inline_query()
 async def inline_m_profile(query: types.InlineQuery):
-    ui = query.from_user.username
-    impc = gun(ui)
+    id = query.from_user.id
+    pstats = gun(id)
     profile = f'''<b>---YOUR PROFILE---
-Name: {ui}
-Wins: {impc[0][0]}
-Looses: {impc[0][1]}
-Draws: {impc[0][2]}
+Name: {query.from_user.username}
+Wins: {pstats[0][0]}
+Looses: {pstats[0][1]}
+Draws: {pstats[0][2]}
 
 Lb place:
 </b>'''
-    result_id = hashlib.md5(str(ui).encode()).hexdigest()
+    result_id = hashlib.md5(str(query.from_user.username).encode()).hexdigest()
     result = types.InlineQueryResultArticle(
         id=result_id, title='profile',
         input_message_content=types.InputTextMessageContent(message_text=profile, parse_mode='HTML'),

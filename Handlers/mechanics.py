@@ -3,10 +3,10 @@ from aiogram import Router, F
 from aiogram.filters import StateFilter
 from aiogram.types import CallbackQuery
 from aiogram.exceptions import TelegramBadRequest
-from Keyboards.interfaces import psc_gamemode, profile_window, starting_menu
+from Keyboards.interfaces import psc_gamemode, profile_window, starting_menu, social_ref_link
 from States.user_states import Fsm_state_list
 from aiogram.fsm.context import FSMContext
-from Handlers.database import draw_counter, loses_counter, win_counter, gpd_wld
+from Handlers.database import draw_counter, loses_counter, win_counter, gpd_wld, get_social_stats
 
 router = Router()
 
@@ -89,8 +89,18 @@ async def answer(callback: CallbackQuery):
         await callback.answer()
 
 
+@router.callback_query(F.data == 'link')
+async def generate_ref_link(callback: CallbackQuery, state: FSMContext):
+    await state.set_state(Fsm_state_list.SOCIAL)
+    get = get_social_stats(callback.from_user.id)
+    await callback.message.edit_text(text=f'''<b>---YOUR SOCIAL STATS---
+Friends: {get}
+
+</b>''', reply_markup=profile_window(), parse_mode='HTML')
+    await callback.answer()
+
+
 @router.callback_query()
 async def trash(callback: CallbackQuery):
     await callback.answer('Are blindfolded? !BACK! , who is it for')
-
 # ¯\_(ツ)_/¯

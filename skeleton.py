@@ -7,7 +7,7 @@ from Handlers import inline_profile_view
 
 
 async def main():
-    bot = Bot(token="TOKEN")
+    bot = Bot(token="7170960627:AAH-5Qd7FGMZwYHpFUtaRzB9SfU2PLuZqbg")
     dp = Dispatcher()
     db_start()
 
