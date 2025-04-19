@@ -15,14 +15,12 @@ def db_start():
         db.commit()
 
 
-def user_in(id: int, name: str = ''):
+def user_in(id: int, name: str = None, ref_id: int = None):
     with sq.connect("sspaper.db") as db:
         try:
             cursor = db.cursor()
-            cursor.execute('INSERT INTO users(user_id, username) VALUES (?,?)', (id, name))
+            cursor.execute('INSERT INTO users(user_id, username, referrer_id) VALUES (?,?,?)', (id, name, ref_id))
             db.commit()
-        except sq.IntegrityError:
-            print(f"User with user_id {id} already created")
         except Exception as e:
             print(f":Error while adding new user {e}")
 
@@ -48,13 +46,6 @@ def draw_counter(id: int):
         db.commit()
 
 
-def bonuses_counter(id: int):
-    with sq.connect("sspaper.db") as db:
-        cursor = db.cursor()
-        cursor.execute('UPDATE users SET bonuses = COALESCE(bonuses, 0) +0.2 WHERE user_id = ?', (id,))
-        db.commit()
-
-
 def gpd_wld(id: int):
     with sq.connect("sspaper.db") as db:
         cursor = db.cursor()
@@ -69,11 +60,32 @@ def gun(id: int):
         return cursor.fetchall()
 
 
-def get_social_stats(id: int):
+def get_friends(id: int):
     with sq.connect("sspaper.db") as db:
         cursor = db.cursor()
         cursor.execute('SELECT COUNT(referrer_id) FROM users WHERE referrer_id = ?', (id,))
-        return cursor.fetchall()
+        results = cursor.fetchall()
+        results = results[0][0]
+        return results
 
+
+def get_bonuses(id: int):
+    with sq.connect("sspaper.db") as db:
+        cursor = db.cursor()
+        cursor.execute('SELECT bonuses FROM users WHERE user_id = ?', (id,))
+        results = cursor.fetchall()
+        results = results[0][0]
+        return results
+
+
+def check_for_bonus(id: int):
+    with sq.connect("sspaper.db") as db:
+        cursor = db.cursor()
+        cursor.execute('SELECT * FROM users WHERE user_id = ?', (id,))
+        results = cursor.fetchall()
+        results = results[0][1]
+        if results is not None:
+            cursor.execute('UPDATE users SET bonuses = COALESCE(bonuses, 0) + 1 WHERE user_id = ?', (results,))
+            db.commit()
 
 # ¯\_(ツ)_/¯

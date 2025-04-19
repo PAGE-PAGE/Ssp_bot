@@ -6,8 +6,7 @@ from aiogram.exceptions import TelegramBadRequest
 from Keyboards.interfaces import psc_gamemode, profile_window, starting_menu, social_ref_link
 from States.user_states import Fsm_state_list
 from aiogram.fsm.context import FSMContext
-from Handlers.database import draw_counter, loses_counter, win_counter, gpd_wld, get_social_stats
-
+from Handlers.database import draw_counter, loses_counter, win_counter, gpd_wld, get_friends, check_for_bonus, get_bonuses
 router = Router()
 
 
@@ -29,7 +28,7 @@ Wins: {get[0][1]}
 Looses: {get[0][2]}
 Draws: {get[0][3]}
                                        
-Lb place:
+Lb place: soon
 </b>''', reply_markup=profile_window(), parse_mode='HTML')
     await callback.answer()
 
@@ -60,10 +59,12 @@ async def answer(callback: CallbackQuery):
         if comp == '✂️':
             res = 'WIN'
             win_counter(id)
+            check_for_bonus(id)
     if action == '📃':
         if comp == '🗿':
             res = 'WIN'
             win_counter(id)
+            check_for_bonus(id)
         if comp == '📃':
             res = '️DRAW'
             draw_counter(id)
@@ -77,6 +78,7 @@ async def answer(callback: CallbackQuery):
         if comp == '📃':
             res = 'WIN'
             win_counter(id)
+            check_for_bonus(id)
         if comp == '✂️':
             res = 'DRAW'
             draw_counter(id)
@@ -90,17 +92,26 @@ async def answer(callback: CallbackQuery):
 
 
 @router.callback_query(F.data == 'link')
-async def generate_ref_link(callback: CallbackQuery, state: FSMContext):
-    await state.set_state(Fsm_state_list.SOCIAL)
-    get = get_social_stats(callback.from_user.id)
-    await callback.message.edit_text(text=f'''<b>---YOUR SOCIAL STATS---
-Friends: {get}
+async def generate_ref_link(callback: CallbackQuery):
+    await callback.message.answer(f"Your ref link:\n"
+                                  f"<code>https://t.me/aparfins_bot?start={callback.from_user.id}</code>", parse_mode='HTML')
+    await callback.answer()
 
-</b>''', reply_markup=profile_window(), parse_mode='HTML')
+
+@router.callback_query(F.data == 'social', StateFilter(Fsm_state_list.START))
+async def view_social_stats(callback: CallbackQuery, state: FSMContext):
+    await state.set_state(Fsm_state_list.SOCIAL)
+    get = get_friends(callback.from_user.id), get_bonuses(callback.from_user.id)
+    await callback.message.edit_text(text=f'''<b>---YOUR SOCIAL STATS---
+Friends: {get[0]}
+Bonuses: {get[1]}
+Top: soon
+</b>''', reply_markup=social_ref_link(), parse_mode='HTML')
     await callback.answer()
 
 
 @router.callback_query()
 async def trash(callback: CallbackQuery):
     await callback.answer('Are blindfolded? !BACK! , who is it for')
+
 # ¯\_(ツ)_/¯

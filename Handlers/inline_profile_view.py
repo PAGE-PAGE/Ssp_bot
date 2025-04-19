@@ -16,7 +16,7 @@ Wins: {pstats[0][0]}
 Looses: {pstats[0][1]}
 Draws: {pstats[0][2]}
 
-Lb place:
+Lb place: soon
 </b>'''
     result_id = hashlib.md5(str(query.from_user.username).encode()).hexdigest()
     result = types.InlineQueryResultArticle(
