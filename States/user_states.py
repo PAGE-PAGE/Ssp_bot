@@ -6,5 +6,7 @@ class Fsm_state_list(StatesGroup):
     PROFILE = State()
     GAME = State()
     SOCIAL = State()
+    LBOARD = State()
+    DONAT = State()
 
 # ¯\_(ツ)_/¯

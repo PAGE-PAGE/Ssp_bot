@@ -20,6 +20,7 @@ async def start_with_ref(message: Message, command: CommandStart, state: FSMCont
 
 @router.message(Command('start'))
 async def psc_starting(message: Message, state: FSMContext):
+
     await state.set_state(Fsm_state_list.START)
     await message.answer(text='Hello there!',
                          reply_markup=starting_menu())

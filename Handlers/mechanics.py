@@ -1,12 +1,12 @@
 from random import choice
 from aiogram import Router, F
 from aiogram.filters import StateFilter
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, LabeledPrice
 from aiogram.exceptions import TelegramBadRequest
-from Keyboards.interfaces import psc_gamemode, profile_window, starting_menu, social_ref_link
+from Keyboards.interfaces import psc_gamemode, back, starting_menu, social_ref_link, stars_keyboard, donation_keyboard
 from States.user_states import Fsm_state_list
 from aiogram.fsm.context import FSMContext
-from Handlers.database import draw_counter, loses_counter, win_counter, gpd_wld, get_friends, check_for_bonus, get_bonuses
+from Handlers.database import *
 router = Router()
 
 
@@ -18,18 +18,21 @@ async def i_always_come_back(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
+@router.callback_query(F.data == '🔙🔙')
+async def i_always_come_back(callback: CallbackQuery):
+    await callback.message.delete()
+    await callback.answer()
+
 @router.callback_query(F.data == 'profile', StateFilter(Fsm_state_list.START))
 async def profile_managing(callback: CallbackQuery, state: FSMContext):
     await state.set_state(Fsm_state_list.PROFILE)
     get = gpd_wld(callback.from_user.id)
     await callback.message.edit_text(text=f'''<b>---YOUR PROFILE---
-Name: {get[0][0]}
+Name: "{get[0][0]}"
 Wins: {get[0][1]}
 Looses: {get[0][2]}
 Draws: {get[0][3]}
-                                       
-Lb place: soon
-</b>''', reply_markup=profile_window(), parse_mode='HTML')
+</b>''', reply_markup=back(), parse_mode='HTML')
     await callback.answer()
 
 
@@ -49,39 +52,16 @@ async def answer(callback: CallbackQuery):
     id = callback.from_user.id
     comp = choice(['🗿', '📃', '✂️'])
     res = ''
-    if action == '🗿':
-        if comp == '🗿':
-            res = 'DRAW'
-            draw_counter(id)
-        if comp == '📃':
-            res = 'LOSE'
-            loses_counter(id)
-        if comp == '✂️':
-            res = 'WIN'
-            win_counter(id)
-            check_for_bonus(id)
-    if action == '📃':
-        if comp == '🗿':
-            res = 'WIN'
-            win_counter(id)
-            check_for_bonus(id)
-        if comp == '📃':
-            res = '️DRAW'
-            draw_counter(id)
-        if comp == '✂️':
-            res = 'LOSE'
-            loses_counter(id)
-    if action == '✂️':
-        if comp == '🗿':
-            res = 'LOSE'
-            loses_counter(id)
-        if comp == '📃':
-            res = 'WIN'
-            win_counter(id)
-            check_for_bonus(id)
-        if comp == '✂️':
-            res = 'DRAW'
-            draw_counter(id)
+    if action == comp:
+        res = 'DRAW'
+        draw_counter(id)
+    if action == '🗿' and comp == '✂️' or action == '📃' and comp == '🗿' or action == '✂️' and comp == '📃':
+        res = 'WIN'
+        win_counter(id)
+        check_for_bonus(id)
+    if action == '🗿' and comp == '📃' or action == '📃' and comp == '✂️' or action == '✂️' and comp == '🗿':
+        res = 'LOSE'
+        loses_counter(id)
     try:
         await callback.message.edit_text(
             text=f'Your choice: <b>{action}</b>\nComputer choice: <b>{comp}</b>\nMatch end with your: <b>{res}</b>',
@@ -101,12 +81,62 @@ async def generate_ref_link(callback: CallbackQuery):
 @router.callback_query(F.data == 'social', StateFilter(Fsm_state_list.START))
 async def view_social_stats(callback: CallbackQuery, state: FSMContext):
     await state.set_state(Fsm_state_list.SOCIAL)
+    nick = callback.from_user.username
+    for a, b in enumerate(lb_info(), 1):
+        if nick == b[0]:
+            break
     get = get_friends(callback.from_user.id), get_bonuses(callback.from_user.id)
+    if a == 1:
+        a = '🥇'
+    elif a == 2:
+        a = '🥈'
+    elif a == 3:
+        a = '🥉'
     await callback.message.edit_text(text=f'''<b>---YOUR SOCIAL STATS---
 Friends: {get[0]}
 Bonuses: {get[1]}
-Top: soon
+Lb place: {nick} {a}
 </b>''', reply_markup=social_ref_link(), parse_mode='HTML')
+    await callback.answer()
+
+
+@router.callback_query(F.data == 'leader', StateFilter(Fsm_state_list.START))
+async def view_social_stats(callback: CallbackQuery, state: FSMContext):
+    await state.set_state(Fsm_state_list.LBOARD)
+    b = ''
+    for a, c in enumerate(lb_info(), 1):
+        b += f'#{a} {c[0]} Wins:{c[1]}\n'
+    await callback.message.edit_text(text=f'''<b>---LEADER BOARD---
+{b}
+    </b>''', reply_markup=back(), parse_mode='HTML')
+    await callback.answer()
+
+
+@router.callback_query(F.data == 'donat', StateFilter(Fsm_state_list.START))
+async def u1y1t1(callback: CallbackQuery, state: FSMContext):
+    await state.set_state(Fsm_state_list.DONAT)
+    await callback.message.edit_text(text=f'''<b>-----DONAT-----
+!Donat to give me more time to life🤩
+        </b>''', reply_markup=stars_keyboard(), parse_mode='HTML')
+    await callback.answer()
+
+
+@router.callback_query(F.data == 'stars:1', StateFilter(Fsm_state_list.DONAT))
+@router.callback_query(F.data == 'stars:5', StateFilter(Fsm_state_list.DONAT))
+@router.callback_query(F.data == 'stars:10', StateFilter(Fsm_state_list.DONAT))
+async def payment_xleb(callback: CallbackQuery, state: FSMContext):
+    amount = int(callback.data.split(':')[1])
+    prices = [LabeledPrice(label="XTR", amount=amount)]
+    await callback.message.answer_invoice(
+        title='donation',
+        description='You donate:',
+        prices=prices,
+        provider_token="",
+        payload=f"{amount}_stars",
+        currency="XTR",
+        reply_markup=donation_keyboard(amount)
+    )
+    await state.set_state(Fsm_state_list.START)
     await callback.answer()
 
 

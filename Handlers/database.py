@@ -22,7 +22,7 @@ def user_in(id: int, name: str = None, ref_id: int = None):
             cursor.execute('INSERT INTO users(user_id, username, referrer_id) VALUES (?,?,?)', (id, name, ref_id))
             db.commit()
         except Exception as e:
-            print(f":Error while adding new user {e}")
+            pass
 
 
 def win_counter(id: int):
@@ -87,5 +87,15 @@ def check_for_bonus(id: int):
         if results is not None:
             cursor.execute('UPDATE users SET bonuses = COALESCE(bonuses, 0) + 1 WHERE user_id = ?', (results,))
             db.commit()
+
+
+def lb_info():
+    with sq.connect("sspaper.db") as db:
+        cursor = db.cursor()
+        cursor.execute('SELECT username, wins, loses FROM users')
+        results = cursor.fetchall()
+        results.sort(reverse=True, key=lambda x: x[1])
+
+        return results
 
 # ¯\_(ツ)_/¯
